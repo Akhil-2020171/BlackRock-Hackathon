@@ -320,6 +320,251 @@ java -jar target/selfinvestment-0.0.1.jar
 
 ---
 
+## Docker Setup & Deployment
+
+### Build Docker Image Locally
+
+#### Build and Tag
+```bash
+# Build the Docker image
+docker build -t akhil2020171/selfinvestment-api:latest .
+
+# Or with a specific version
+docker build -t akhil2020171/selfinvestment-api:v1.0.0 .
+```
+
+#### Test Locally
+```bash
+# Run the container
+docker run -d \
+  --name selfinvestment-api \
+  -p 5477:5477 \
+  -e APP_SECURITY_API_KEY=akhilsharma \
+  -e CORS_ALLOWED_ORIGINS=http://localhost:5477 \
+  akhil2020171/selfinvestment-api:latest
+
+# Test the API
+curl -H "X-API-KEY: akhilsharma" \
+     http://localhost:5477/blackrock/challenge/v1/performance
+
+# View logs
+docker logs selfinvestment-api
+
+# Stop the container
+docker stop selfinvestment-api
+docker rm selfinvestment-api
+```
+
+---
+
+### Push to Docker Hub
+
+#### Prerequisites
+1. Create a [Docker Hub](https://hub.docker.com) account
+2. Login locally:
+```bash
+docker login
+# Enter your Docker Hub username and password
+```
+
+#### Push Commands
+```bash
+# Build and tag image
+docker build -t akhil2020171/selfinvestment-api:latest .
+docker build -t akhil2020171/selfinvestment-api:v1.0.0 .
+
+# Push to Docker Hub
+docker push akhil2020171/selfinvestment-api:latest
+docker push akhil2020171/selfinvestment-api:v1.0.0
+
+# Verify push
+docker pull akhil2020171/selfinvestment-api:latest
+```
+
+#### Docker Hub Image URL
+```
+docker.io/akhil2020171/selfinvestment-api:latest
+docker.io/akhil2020171/selfinvestment-api:v1.0.0
+```
+
+---
+
+### Push to GitHub Container Registry (GHCR)
+
+#### Prerequisites
+1. Create a [GitHub Personal Access Token (PAT)](https://github.com/settings/tokens) with `write:packages` scope
+2. Login to GHCR:
+```bash
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+```
+
+#### Push Commands
+```bash
+# Build and tag image for GHCR
+docker build -t ghcr.io/akhil-2020171/selfinvestment-api:latest .
+docker build -t ghcr.io/akhil-2020171/selfinvestment-api:v1.0.0 .
+
+# Push to GHCR
+docker push ghcr.io/akhil-2020171/selfinvestment-api:latest
+docker push ghcr.io/akhil-2020171/selfinvestment-api:v1.0.0
+
+# Verify push (pull)
+docker pull ghcr.io/akhil-2020171/selfinvestment-api:latest
+```
+
+#### GHCR Image URL
+```
+ghcr.io/akhil-2020171/selfinvestment-api:latest
+ghcr.io/akhil-2020171/selfinvestment-api:v1.0.0
+```
+
+---
+
+### Run from Docker Hub / GHCR
+
+#### From Docker Hub
+```bash
+docker run -d \
+  --name selfinvestment-api \
+  -p 5477:5477 \
+  -e APP_SECURITY_API_KEY=akhilsharma \
+  -e CORS_ALLOWED_ORIGINS=http://localhost:5477 \
+  docker.io/akhil2020171/selfinvestment-api:latest
+```
+
+#### From GHCR
+```bash
+docker run -d \
+  --name selfinvestment-api \
+  -p 5477:5477 \
+  -e APP_SECURITY_API_KEY=akhilsharma \
+  -e CORS_ALLOWED_ORIGINS=http://localhost:5477 \
+  ghcr.io/akhil-2020171/selfinvestment-api:latest
+```
+
+---
+
+### Docker Compose
+
+#### Run with Docker Compose
+```bash
+docker-compose up -d
+```
+
+#### Docker Compose File Content
+**File:** `docker-compose.yml`
+```yaml
+version: '3.8'
+
+services:
+  selfinvestment-api:
+    image: akhil2020171/selfinvestment-api:latest
+    container_name: selfinvestment-api
+    ports:
+      - "5477:5477"
+    environment:
+      SERVER_PORT: 5477
+      SPRING_APPLICATION_NAME: selfinvestment
+      APP_SECURITY_API_KEY: akhilsharma
+      CORS_ALLOWED_ORIGINS: http://localhost:5477
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5477/blackrock/challenge/v1/performance"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+```
+
+#### Manage Compose
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes
+docker-compose down -v
+```
+
+---
+
+### Dockerfile Details
+
+**File:** `Dockerfile`
+
+**Two-stage build:**
+1. **Builder Stage:** Compiles the application using Maven on JDK 21
+2. **Runtime Stage:** Runs the application on a lightweight JRE
+
+**Key Features:**
+- Multi-stage build for minimal image size
+- Exposes port 5477
+- Environment variable `SERVER_PORT=5477`
+- Optimized for production deployment
+
+---
+
+### Docker Best Practices Applied
+
+✅ **Multi-stage Build** — Reduces final image size (excludes Maven and build artifacts)  
+✅ **Minimal Base Image** — eclipse-temurin:21-jre-jammy (JRE only, no build tools)  
+✅ **Explicit Port** — 5477 clearly documented and exposed  
+✅ **Environment Configuration** — Port and application settings via environment variables  
+✅ **.dockerignore** — Excludes unnecessaryfiles from build context  
+✅ **Health Checks** — Docker Compose includes health check endpoint  
+✅ **Restart Policy** — Configured to auto-restart on failure  
+
+---
+
+### Troubleshooting
+
+**Port already in use:**
+```bash
+# Find and kill process on port 5477
+docker ps -a | grep 5477
+docker stop <container-id>
+```
+
+**Image not found:**
+```bash
+# Rebuild the image
+docker build -t akhil2020171/selfinvestment-api:latest .
+
+# Or pull from registry
+docker pull docker.io/akhil2020171/selfinvestment-api:latest
+```
+
+**Container won't start:**
+```bash
+# Check logs
+docker logs selfinvestment-api
+
+# Inspect container
+docker inspect selfinvestment-api
+
+# Run with interactive terminal for debugging
+docker run -it --rm akhil2020171/selfinvestment-api:latest
+```
+
+**API not responding:**
+```bash
+# Check health
+curl -H "X-API-KEY: akhilsharma" http://localhost:5477/blackrock/challenge/v1/performance
+
+# Verify port mapping
+docker port selfinvestment-api
+
+# Check container IP
+docker inspect selfinvestment-api | grep IPAddress
+```
+
+---
+
 ## Testing with Postman
 
 ### Set up Headers

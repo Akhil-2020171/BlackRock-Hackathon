@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  selfinvestment-api:
+    image: akhil2020171/selfinvestment-api:latest
+    container_name: selfinvestment-api
+    ports:
+      - "5477:5477"
+    environment:
+      SERVER_PORT: 5477
+      SPRING_APPLICATION_NAME: selfinvestment
+      APP_SECURITY_API_KEY: akhilsharma
+      CORS_ALLOWED_ORIGINS: http://localhost:5477
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5477/blackrock/challenge/v1/performance"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

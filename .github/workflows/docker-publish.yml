@@ -12,10 +12,6 @@ on:
       - main
       - master
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -26,6 +22,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # 🔥 Convert repository name to lowercase (Docker requirement)
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -66,20 +66,27 @@ jobs:
     if: github.event_name != 'pull_request'
 
     steps:
-      - name: Pull and test Docker image
-        run: |
-          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+      - name: Set lowercase image name
+        run: echo "IMAGE_NAME=ghcr.io/${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
 
+      - name: Login to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Pull and run Docker image
+        run: |
           docker run -d \
             --name selfinvestment-test \
             -p 5477:5477 \
             -e APP_SECURITY_API_KEY=akhilsharma \
             -e CORS_ALLOWED_ORIGINS=http://localhost:5477 \
-            ghcr.io/${{ github.repository }}:latest
+            ${{ env.IMAGE_NAME }}:latest
 
-          sleep 10
+          sleep 15
 
+      - name: Test performance endpoint
+        run: |
           curl -f -H "X-API-KEY: akhilsharma" \
-               http://localhost:5477/blackrock/challenge/v1/performance || exit 1
+               http://localhost:5477/blackrock/challenge/v1/performance
 
-          docker stop selfinvestment-test
+      - name: Stop container
+        run: docker stop selfinvestment-test

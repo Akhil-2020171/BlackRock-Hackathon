@@ -1,5 +1,6 @@
 package com.blackrock.selfinvestment.models;
-import java.util.Date;
+
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -11,9 +12,9 @@ import lombok.Data;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class validTransactionDTO {
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    Date date;
-    double amount;
-    double ceiling;
-    double remanent;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime date;
+    private double amount;
+    private double ceiling;
+    private double remanent;
 }

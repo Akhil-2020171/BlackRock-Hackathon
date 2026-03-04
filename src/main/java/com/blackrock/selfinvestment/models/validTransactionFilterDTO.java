@@ -1,6 +1,6 @@
 package com.blackrock.selfinvestment.models;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -10,10 +10,10 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class validTransactionFilterDTO {
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
-    Date date;
-    double amount;
-    double ceiling;
-    double remanent;
-    boolean inKPeriod;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime date;
+    private double amount;
+    private double ceiling;
+    private double remanent;
+    private boolean inKPeriod;
 }

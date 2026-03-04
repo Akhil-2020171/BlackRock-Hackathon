@@ -15,6 +15,8 @@ The Self-Investment Transaction API provides endpoints for parsing, validating, 
 - Validate transactions against wage limits
 - Filter transactions using complex business rules (Q, P, K periods)
 - Detect duplicate transactions
+- NPS returns
+- Index (like NIFTY50) returns
 
 ✅ **Security**
 - API-key based authentication (X-API-KEY header)
@@ -40,7 +42,8 @@ selfinvestment/
 │   ├── SelfInvestmentController.java      # Transaction endpoints
 │   └── PerformaceController.java          # Performance endpoint
 ├── service/
-│   ├── TransactionService.java            # Business logic
+│   ├── TransactionService.java            # Business logic for transaction
+|   ├── ReturnsService.java                # Business logic for returns
 │   └── PerformanceService.java            # Metrics collection
 ├── models/                                # DTOs
 ├── authorization/
@@ -251,6 +254,115 @@ curl -H "X-API-KEY: akhilsharma" http://192.168.1.8:8080/blackrock/challenge/v1/
 - `durationTime`: Request processing time (HH:MM:SS.mmm format)
 - `memoryUsage`: Heap memory in use (MB)
 - `threadCount`: Active thread count
+
+---
+
+### 5. Returns 
+Provide returns for two schemes, NPS and Index.
+
+**Endpoint:** `POST /blackrock/challenge/v1/returns:nps`
+
+**Endpoint:** `POST /blackrock/challenge/v1/returns:index`
+
+**Authentication:** Required (X-API-KEY header)
+
+**Request:**
+```json
+{
+    "age": 29,
+    "wage": 50000,
+    "inflation": 5.5,
+    "q": [
+        {
+            "fixed": 0,
+            "start": "2023-07-01 00:00:00",
+            "end": "2023-07-31 23:59:59"
+        }
+    ],
+    "p": [
+        {
+            "extra": 25,
+            "start": "2023-10-01 08:00:00",
+            "end": "2023-12-31 19:59:59"
+        }
+    ],
+    "k": [
+        {
+            "start": "2023-01-01 00:00:00",
+            "end": "2023-12-31 23:59:59"
+        },
+        {
+            "start": "2023-03-01 00:00:00",
+            "end": "2023-11-31 23:59:59"
+        }
+    ],
+    "transactions": [
+        {
+            "date": "2023-02-28 15:49:20",
+            "amount": 375
+        },
+        {
+            "date": "2023-07-01 21:59:00",
+            "amount": 620
+        },
+        {
+            "date": "2023-10-12 20:15:30",
+            "amount": 250
+        },
+        {
+            "date": "2023-12-17 08:09:45",
+            "amount": 480
+        },
+        {
+            "date": "2023-12-17 08:09:45",
+            "amount": -10
+        }
+    ]
+}
+```
+
+**Response:**
+```json
+-- for NPS --
+{
+  "totalTransactionAmount": 1725,
+  "totalCeiling": 1900,
+  "savingByDates": [
+    {
+      "start": "2023-01-01 00:00:00",
+      "end": "2023-12-31 23:59:59",
+      "amount": 145,
+      "profit": 86.88,
+      "taxBenefit": 0
+    },
+    {
+      "start": "2023-03-01 00:00:00",
+      "end": "2023-11-30 23:59:59",
+      "amount": 75,
+      "profit": 44.94,
+      "taxBenefit": 0
+    }
+  ]
+}
+
+-- for INDEX --
+{
+    "totalTransactionAmount": 1725.0,
+    "totalCeiling": 1900.0,
+    "savingByDates": [
+        {
+            "return": 1829.51,
+            "start": "2023-01-01 00:00:00",
+            "end": "2023-12-31 23:59:59"
+        },
+        {
+            "return": 946.3,
+            "start": "2023-03-01 00:00:00",
+            "end": "2023-11-30 23:59:59"
+        }
+    ]
+}
+```
 
 ---
 

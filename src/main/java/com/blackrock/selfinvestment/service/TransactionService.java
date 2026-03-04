@@ -1,7 +1,7 @@
 package com.blackrock.selfinvestment.service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +22,22 @@ import com.blackrock.selfinvestment.models.transactionsDTO;
 import com.blackrock.selfinvestment.models.validTransactionDTO;
 import com.blackrock.selfinvestment.models.validTransactionFilterDTO;
 
+/**
+ * Service class for handling transaction-related business logic.
+ */
 @Service
 public class TransactionService {
 
+    /**
+     * Parse the list of transactions and return the response.
+     * @param transactions List of transactions to be parsed.
+     * @return List of transactionResponseDTO containing the parsed transactions.
+     */
     public List<transactionResponseDTO> parseTransactions(List<transactionsDTO> transactions) {
         List<transactionResponseDTO> responseList = new ArrayList<>();
         for (transactionsDTO transaction : transactions) {
             double ammount = transaction.getAmount();
-            Date date = transaction.getDate();
+            LocalDateTime date = transaction.getDate();
             double ceiling = Math.ceil(ammount / 100) * 100;
             double remanent = ceiling - ammount;
             responseList.add(new transactionResponseDTO(date, ammount, ceiling, remanent));
@@ -37,6 +45,11 @@ public class TransactionService {
         return responseList;
     }
 
+    /**
+     * Validate the list of transactions and return the response.
+     * @param transactions transactionValidatorDTO containing the transactions to be validated and wage information.
+     * @return Map containing the lists of valid and invalid transactions along with validation messages.
+     */
     public Map<String, Object> validateTransactions(transactionValidatorDTO transactions) {
         List<transactionResponseDTO> transactionList = transactions.getTransactions();
 
@@ -45,7 +58,7 @@ public class TransactionService {
         List<invalidTransactionDTO> invalidTransactions = new ArrayList<>();
 
         for (transactionResponseDTO transaction : transactionList) {
-            Date date = transaction.getDate();
+            LocalDateTime date = transaction.getDate();
             double ammount = transaction.getAmount();
             double ceiling = transaction.getCeiling();
             double remanent = transaction.getRemanent();
@@ -72,6 +85,11 @@ public class TransactionService {
 
     }
 
+    /**
+     * Filter and validate the list of transactions based on the provided criteria.
+     * @param transactions transactionFilterDTO containing the transactions to be filtered and validated along with filter criteria and wage information.
+     * @return Map containing the lists of valid and invalid transactions after filtering along with validation messages.
+     */
     public Map<String, Object> validateTransactions(transactionFilterValidatorDTO transactions) {
         List<transactionFilterResponseDTO> transactionList = transactions.getTransactions();
 
@@ -80,7 +98,7 @@ public class TransactionService {
         List<invalidTransactionDTO> invalidTransactions = new ArrayList<>();
 
         for (transactionFilterResponseDTO transaction : transactionList) {
-            Date date = transaction.getDate();
+            LocalDateTime date = transaction.getDate();
             double ammount = transaction.getAmount();
             double ceiling = transaction.getCeiling();
             double remanent = transaction.getRemanent();
@@ -107,12 +125,17 @@ public class TransactionService {
 
     }
 
+    /**
+     * Filter and validate the list of transactions based on the provided criteria.
+     * @param transactions transactionFilterDTO containing the transactions to be filtered and validated along with filter criteria and wage information.
+     * @return Map containing the lists of valid and invalid transactions after filtering along with validation messages.
+     */
     public Map<String, Object> filterAndValidate(transactionFilterDTO filterDTO) {
         List<transactionFilterResponseDTO> calculatedList = new ArrayList<>();
 
         for (transactionsDTO transaction : filterDTO.getTransactions()) {
 
-            Date date = transaction.getDate();
+            LocalDateTime date = transaction.getDate();
             double originalAmount = transaction.getAmount();
 
             if (originalAmount <= 0) {
@@ -139,7 +162,7 @@ public class TransactionService {
                 for (qMomentsDTO q : filterDTO.getQ()) {
                     if (Helper.isBetweenInclusive(date, q.getStart(), q.getEnd())) {
                         if (selectedQ == null ||
-                                q.getStart().after(selectedQ.getStart())) {
+                                q.getStart().isAfter(selectedQ.getStart())) {
                             selectedQ = q;
                         }
                     }

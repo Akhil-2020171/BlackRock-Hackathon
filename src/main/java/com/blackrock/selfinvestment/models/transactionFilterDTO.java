@@ -8,9 +8,9 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class transactionFilterDTO {
-    List<qMomentsDTO> q;
-    List<pMomentsDTO> p;
-    List<kGroupsDTO> k;
-    double wage;
-    List<transactionsDTO> transactions;
+    private List<qMomentsDTO> q;
+    private List<pMomentsDTO> p;
+    private List<kGroupsDTO> k;
+    private double wage;
+    private List<transactionsDTO> transactions;
 }

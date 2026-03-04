@@ -8,6 +8,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class transactionValidatorDTO {
-    List<transactionResponseDTO> transactions;
-    double wage;
+    private List<transactionResponseDTO> transactions;
+    private double wage;
 }
